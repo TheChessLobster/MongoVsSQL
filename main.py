@@ -189,14 +189,14 @@ def Plot(mongoResults,sqlResults):
     axes.set_ylim([0, 2])
     plt.show()
 
-    # Plot aggregate many speed 4
+    # Plot update many speed 4
     speed = [mongoResults[4], sqlResults[4]]
     plt.bar(["NoSQL", "SQL"], speed)
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
     plt.title("150,000 Record Update")
     axes = plt.gca()
-    axes.set_ylim([0, .5])
+    axes.set_ylim([0, 1])
     plt.show()
 
     # Plot delete many speed 5
@@ -211,7 +211,7 @@ def Plot(mongoResults,sqlResults):
 
     #Create double bar graph for all output
     w = .4
-    x= ["FindOne","FindMany","InsertMany","AggMany","UpdateMany","DeleteMany"]
+    x= ["FindOne","FindMany","InsertMany","AggMany","UpMany","DeleteMany"]
     mongo = [mongoResults[0],mongoResults[1],mongoResults[2],mongoResults[3],mongoResults[4],mongoResults[5]]
     SQL= [sqlResults[0],sqlResults[1],sqlResults[2],sqlResults[3],sqlResults[4],sqlResults[5]]
 
@@ -235,7 +235,7 @@ def Plot(mongoResults,sqlResults):
 
     #Create final fully aggregated Mongo Results
     speed = [mongoResults[0],mongoResults[1],mongoResults[2],mongoResults[3],mongoResults[4],mongoResults[5]]
-    plt.bar(["FindOne","FindMany","InsertMany","AggMany","UpdateMany","DeleteMany"], speed)
+    plt.bar(["FindOne","FindMany","InsertMany","AggMany","UpMany","DeleteMany"], speed)
     plt.xlabel("Query Type")
     plt.ylabel("Speed in seconds")
     plt.title("NoSQL Stats")
@@ -246,7 +246,7 @@ def Plot(mongoResults,sqlResults):
 
     #Create same plot for SQL results
     speed = [sqlResults[0], sqlResults[1], sqlResults[2], sqlResults[3], sqlResults[4],sqlResults[5]]
-    plt.bar(["FindOne", "FindMany", "InsertMany", "AggMany","UpdateMany", "DeleteMany"], speed)
+    plt.bar(["FindOne", "FindMany", "InsertMany", "AggMany","UpMany", "DeleteMany"], speed)
     plt.xlabel("Query Type")
     plt.ylabel("Speed in seconds")
     plt.title("SQL Stats")

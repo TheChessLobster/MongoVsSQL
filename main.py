@@ -52,6 +52,13 @@ def mongoTests():
     MongoAggregateTime = end-start
     print("Time for MongoDB to sum Aggregate over a collection is: " + str(MongoAggregateTime))
 
+    #calculate order by of entire collection
+    start = clock.perf_counter()
+    result = mycollection.find().sort("Total Profit",pymongo.DESCENDING)
+    end = clock.perf_counter()
+    MongoSortTime = end - start
+    print("Time for MongoDB to sum Aggregate over a collection is: " + str(MongoSortTime))
+
     # Record time to delete those newly inserted records
     start = clock.perf_counter()
     newcollection.delete_many({})
@@ -60,7 +67,7 @@ def mongoTests():
     print("Time for MongoDB to delete many records via API is " + str(mongoManyDeleteTime))
 
     #Return mongo results
-    return [mongoFindOneTime, mongoFindManyTime, mongoInsertManyTime, MongoAggregateTime, mongoManyDeleteTime]
+    return [mongoFindOneTime, mongoFindManyTime, mongoInsertManyTime, MongoAggregateTime,MongoSortTime, mongoManyDeleteTime]
 
 
 def sqlTests():
@@ -117,6 +124,15 @@ def sqlTests():
     SQLTimeToAggregateMany = end-start
     print("Time for SQL to sum Aggregate over a collection: " + str(SQLTimeToAggregateMany))
 
+    #record time needed to aggregate and sort for the whole selection by Profit descending
+    aggregation_query = "select * from SalesRecords Order By [Total Profit] desc "
+    start = clock.perf_counter()
+    cursor.execute(aggregation_query)
+    end = clock.perf_counter()
+    SQLTimeToOrderBy = end - start
+    print("Time for SQL to order by value over a collection: " + str(SQLTimeToOrderBy))
+
+
 
 
     #record time to delete all of those records
@@ -129,7 +145,7 @@ def sqlTests():
     print("Time for SQL to delete many records via API is: " + str(SQLTimeToDeleteMany))
 
     #return SQL Results
-    return [SQLTimeToFindOne,SQLTimeToFindMany,SQLTimeToInsertMany,SQLTimeToAggregateMany,SQLTimeToDeleteMany]
+    return [SQLTimeToFindOne,SQLTimeToFindMany,SQLTimeToInsertMany,SQLTimeToAggregateMany,SQLTimeToOrderBy,SQLTimeToDeleteMany]
 
 def Plot(mongoResults,sqlResults):
     print("Hello from plotting zone")
@@ -139,6 +155,8 @@ def Plot(mongoResults,sqlResults):
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
     plt.title("Single Record Query")
+    axes = plt.gca()
+    axes.set_ylim([0, .05])
     plt.show()
     # Plot find many speed 1
     speed = [mongoResults[1], sqlResults[1]]
@@ -146,6 +164,8 @@ def Plot(mongoResults,sqlResults):
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
     plt.title("150,000 Record Select Query")
+    axes = plt.gca()
+    axes.set_ylim([0, .005])
     plt.show()
 
     # Plot insert many speed 2
@@ -154,6 +174,8 @@ def Plot(mongoResults,sqlResults):
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
     plt.title("150,000 Record Insertion")
+    axes = plt.gca()
+    axes.set_ylim([0, 20])
     plt.show()
     # Plot aggregate many speed 3
     speed = [mongoResults[3], sqlResults[3]]
@@ -161,33 +183,77 @@ def Plot(mongoResults,sqlResults):
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
     plt.title("150,000 Record Aggregation")
+    axes = plt.gca()
+    axes.set_ylim([0, 2])
     plt.show()
-    # Plot delete many speed 4
+
+    # Plot aggregate many speed 4
     speed = [mongoResults[4], sqlResults[4]]
     plt.bar(["NoSQL", "SQL"], speed)
     plt.xlabel("DB Type")
     plt.ylabel("Speed in seconds")
-    plt.title("150,000 Record Deletion")
+    plt.title("150,000 Record Sort By")
+    axes = plt.gca()
+    axes.set_ylim([0, .5])
     plt.show()
 
-    #Create final fully aggregated bar plot
-    speed = [mongoResults[0],mongoResults[1],mongoResults[2],mongoResults[3],mongoResults[4]]
-    plt.bar(["FindOne","FindMany","InsertMany","AggMany","DeleteMany"], speed)
+    # Plot delete many speed 5
+    speed = [mongoResults[5], sqlResults[5]]
+    plt.bar(["NoSQL", "SQL"], speed)
     plt.xlabel("DB Type")
+    plt.ylabel("Speed in seconds")
+    plt.title("150,000 Record Deletion")
+    axes = plt.gca()
+    axes.set_ylim([0, 2])
+    plt.show()
+
+    #Create double bar graph for all output
+    w = .4
+    x= ["FindOne","FindMany","InsertMany","AggMany","SortMany","DeleteMany"]
+    mongo = [mongoResults[0],mongoResults[1],mongoResults[2],mongoResults[3],mongoResults[4],mongoResults[5]]
+    SQL= [sqlResults[0],sqlResults[1],sqlResults[2],sqlResults[3],sqlResults[4],sqlResults[5]]
+
+    bar1 = np.arange(len(x))
+    bar2 = [i + w for i in bar1]
+
+    plt.bar(bar1,SQL,w,label = "SQL")
+    plt.bar(bar2,mongo,w,label = "NoSQL")
+
+
+    plt.xlabel("Query Types")
+    plt.ylabel("Time in Seconds")
+    plt.title("SQL vs NoSQL Query Performance")
+    plt.xticks(bar1,x)
+    axes = plt.gca()
+    axes.set_ylim([0, 20])
+    plt.legend()
+    plt.show()
+
+
+
+    #Create final fully aggregated Mongo Results
+    speed = [mongoResults[0],mongoResults[1],mongoResults[2],mongoResults[3],mongoResults[4],mongoResults[5]]
+    plt.bar(["FindOne","FindMany","InsertMany","AggMany","SortMany","DeleteMany"], speed)
+    plt.xlabel("Query Type")
     plt.ylabel("Speed in seconds")
     plt.title("NoSQL Stats")
+    axes = plt.gca()
+    axes.set_ylim([0,20])
     plt.show()
 
+
     #Create same plot for SQL results
-    speed = [sqlResults[0], sqlResults[1], sqlResults[2], sqlResults[3], sqlResults[4]]
-    plt.bar(["FindOne", "FindMany", "InsertMany", "AggMany", "DeleteMany"], speed)
-    plt.xlabel("DB Type")
+    speed = [sqlResults[0], sqlResults[1], sqlResults[2], sqlResults[3], sqlResults[4],sqlResults[5]]
+    plt.bar(["FindOne", "FindMany", "InsertMany", "AggMany","SortMany", "DeleteMany"], speed)
+    plt.xlabel("Query Type")
     plt.ylabel("Speed in seconds")
     plt.title("SQL Stats")
+    axes = plt.gca()
+    axes.set_ylim([0, 20])
     plt.show()
 
 def main():
-    # FindOne,FindMany,InsertMany,AggregateMany,DeleteMany
+    # FindOne,FindMany,InsertMany,AggregateSumMany,OrderByProfitDescending, DeleteMany
     mongoresults = mongoTests()
     sqlresults = sqlTests()
     # take results and plot them using Matplot lib
